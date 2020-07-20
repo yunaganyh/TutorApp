@@ -31,15 +31,15 @@ try:
             )'''
         cursor.execute(tableCreation)
 
-
-        # create database for grouped questions
-        cursor.execute('''drop table if exists groups''')
-        tableCreation = '''CREATE TABLE groups (
-            groupID int auto_increment primary key,
-            rank int DEFAULT 0,
+        # create table for grouped questions
+        cursor.execute('''drop table if exists groupedQuestions''')
+        groupTableCreation = '''CREATE TABLE groupedQuestions (
+            gid int auto_increment primary key,
+            questionRank int DEFAULT 0,
+            id int,
             foreign key (id) references submissions (id)
             )'''
-        cursor.execute(tableCreation)
+        cursor.execute(groupTableCreation)
  
 except Exception as e:
     print("Exception occured:{}".format(e))
