@@ -1,0 +1,18 @@
+<h2>
+	Add a new question!
+</h2>
+
+<div>
+	<label>Your name:
+		<input #submitterName />
+	</label>
+	<label>Question:
+		<input #questionDescription />
+	</label>
+	<button 
+	(click)="addQuestion(submitterName.value, questionDescription.value); 
+			submitterName.value='';
+			questionDescription.value=''">
+		Add Question
+	</button>
+</div>

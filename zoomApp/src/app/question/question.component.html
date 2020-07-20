@@ -1,0 +1,11 @@
+<li>
+	Question {{question.id}} from {{question.submitter}}:{{question.description}} <br>
+	Votes: {{question.votes}} <br>
+	Uploaded: {{question.uploadedTime}}
+	<div *ngIf="showVoting">
+		<button title="upvote question"
+		(click)="upvote(question)">Upvote</button>
+		<button title="downvote question"
+		(click)="downvote(question)">Downvote</button>
+	</div>
+</li>

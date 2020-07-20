@@ -1,0 +1,47 @@
+<!-- <h2>Ranked questions for this week</h2>
+<div *ngIf="rankedQuestions?.length > 0; else noRankedQuestions">
+	<ul>
+		<li *ngFor="let question of rankedQuestions">
+			<app-question [question]="question"></app-question>
+	</ul>
+</div>
+
+<ng-template #noRankedQuestions>
+	<h3> Questions are not ranked yet </h3>
+</ng-template> -->
+
+<h2>Questions for this week </h2>
+<div *ngIf="questionsOfTheWeek?.length > 0; else noQuestions">
+	<ul>
+		<li *ngFor="let question of questionsOfTheWeek">
+			<app-question [question]="question" [showVoting]="true"></app-question>
+			<button title="add to group" 
+				(click)="addToGroup(question)">Add to group</button>
+		</li>
+	</ul>
+</div>
+
+<h2> Questions in current group</h2>
+<div *ngIf="currentGroup?.length > 0">
+	<ul>
+		<li *ngFor="let question of currentGroup">
+			<app-question [question]="question" [showVoting]="false"></app-question>
+		</li>
+	</ul>
+</div>
+<button title="group questions"
+	(click)="group()">Group</button>
+
+<h2> Grouped questions </h2>
+<div *ngIf="groups?.keys() > 0">
+	<ul>
+		<li *ngFor="let question of groups">
+			<app-question [question]="question" [showVoting]="false"></app-question>
+		</li>
+	</ul>
+</div>
+
+<ng-template #noQuestions>
+	<h3> No Questions this week yet </h3>
+</ng-template>
+
