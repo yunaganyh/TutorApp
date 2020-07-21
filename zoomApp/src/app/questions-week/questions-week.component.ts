@@ -27,16 +27,10 @@ export class QuestionsWeekComponent implements OnInit {
   }
 
   getQuestionsThisWeek(): void {
-    let storedQuestions = this.questionService.retrieveQuestions();
-    debugger;
-    if (typeof(storedQuestions) != "undefined") {
-      this.filterQuestions(storedQuestions);
-    } else {
-      this.questionService.getQuestions()
-      .subscribe(questions => {
-        this.filterQuestions(questions);
-      })
-    }
+    this.questionService.getQuestions()
+    .subscribe(questions => {
+      this.filterQuestions(questions);
+    })
   }
 
   filterQuestions(questions): void {

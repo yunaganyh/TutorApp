@@ -36,6 +36,10 @@ export class QuestionService {
     return qns;
   }
 
+  // todo: find a way to reduce calls to the database
+  // Add question first to this.questions and then add it to the database?
+  // Could solve issues with having to convert the timestamp
+  // But have to be careful about how the time is stored so that it shows correctly for different timezones
   retrieveQuestions(): Question[] {
     return this.questions;
   }
@@ -54,7 +58,6 @@ export class QuestionService {
   		'description': description,
   		'votes': 0
   		};
-      debugger;
   	return this.http.post<Question>(`${this.url}/questions`, question, this.httpOptions)
   		.pipe(
 	  		tap((newQuestion: Question) => this.log(`added question with ID ${newQuestion[0]['id']}`)),

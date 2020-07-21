@@ -20,8 +20,10 @@ try:
         cursor.execute('''create database if not exists TAqns''')
         db.select_db('''TAqns''')
 
-        # create table for question submissions
+        cursor.execute('''drop table if exists groupedQuestions''')
         cursor.execute('''drop table if exists submissions''')
+        
+        # create table for question submissions
         tableCreation = '''CREATE TABLE submissions (
             id int auto_increment primary key,
             votes int DEFAULT 0,
@@ -32,7 +34,6 @@ try:
         cursor.execute(tableCreation)
 
         # create table for grouped questions
-        cursor.execute('''drop table if exists groupedQuestions''')
         groupTableCreation = '''CREATE TABLE groupedQuestions (
             gid int auto_increment primary key,
             questionRank int DEFAULT 0,

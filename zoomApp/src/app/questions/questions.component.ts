@@ -20,15 +20,10 @@ export class QuestionsComponent implements OnInit {
   }
 
   getQuestions(): void {
-    let storedQuestions = this.questionService.retrieveQuestions();
-    if (typeof(storedQuestions) != "undefined") {
-      this.questions = storedQuestions;
-    } else {
-      this.questionService.getQuestions()
-      .subscribe(questions => {
-      this.questions = questions;
-      })
-    }
+    this.questionService.getQuestions()
+    .subscribe(questions => {
+    this.questions = this.questionService.convertTimeStamp(questions);
+    })
   }
 
 }
