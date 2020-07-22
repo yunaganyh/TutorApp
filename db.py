@@ -21,7 +21,7 @@ try:
         db.select_db('''TAqns''')
 
         cursor.execute('''drop table if exists groupedQuestions''')
-        cursor.execute('''drop table if exists submissions''')
+        # cursor.execute('''drop table if exists submissions''')
         
         # create table for question submissions
         tableCreation = '''CREATE TABLE submissions (
@@ -31,14 +31,15 @@ try:
             submitter varchar(20),
             uploaded timestamp DEFAULT CURRENT_TIMESTAMP
             )'''
-        cursor.execute(tableCreation)
+        # cursor.execute(tableCreation)
 
         # create table for grouped questions
         groupTableCreation = '''CREATE TABLE groupedQuestions (
-            gid int auto_increment primary key,
+            gid int,
             questionRank int DEFAULT 0,
             id int,
-            foreign key (id) references submissions (id)
+            foreign key (id) references submissions (id),
+            key (gid, id)
             )'''
         cursor.execute(groupTableCreation)
  

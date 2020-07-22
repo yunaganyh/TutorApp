@@ -1,7 +1,7 @@
 import { Question } from './question';
 
 export interface Group {
-	groupID: number,
+	gid: number,
 	questions: Question[],
 	rank: number
 }

@@ -40,3 +40,29 @@ def getAllQuestions(conn):
     getQuery = '''select id, votes, description, submitter, unix_timestamp(uploaded) as uploadedTime from submissions order by uploaded desc'''
     curs.execute(getQuery)
     return curs.fetchall()
+
+def getAllGroups(conn):
+    curs = conn.cursor()
+    getQuery = '''select * from submissions inner join groupedQuestions where submissions.id = groupedQuestions.id'''
+    curs.execute(getQuery)
+    return curs.fetchall()
+
+def insertNewGroup(conn, group):
+    curs = conn.cursor()
+    maxID = 0
+    idQuery = '''select gid from groupedQuestions'''
+    hasID = curs.execute(idQuery)
+    if hasID:
+        # todo: somehow max(gid) keeps returning 1. Find a solution. Currently working around this.
+        # maxID = curs.execute('''select max(gid) as maxGID from groupedQuestions''')
+        topQuery = curs.execute('''select gid from groupedQuestions order by gid desc''')
+        top = curs.fetchone()['gid']
+        maxID = top + 1
+    else:
+        maxID = 1
+    insertQuery = '''insert into groupedQuestions (gid, questionRank, id) values (%s, %s, %s)'''
+    for qn in group['questions']:
+        curs.execute(insertQuery, [maxID, group['rank'], qn['id']])
+    getQuery = '''select * from submissions inner join groupedQuestions on submissions.id = groupedQuestions.id where groupedQuestions.gid = %s'''
+    curs.execute(getQuery, [maxID])
+    return curs.fetchall()

@@ -22,10 +22,12 @@
 </div>
 
 <h2> Questions in current group</h2>
-<div *ngIf="currentGroup?.length > 0">
+<div *ngIf="currentGroup?.questions?.length > 0">
 	<ul>
-		<li *ngFor="let question of currentGroup">
+		<li *ngFor="let question of currentGroup.questions">
 			<app-question [question]="question" [showVoting]="false"></app-question>
+			<button title="remove from group"
+				(click)="removeFromGroup(question)">Remove from group</button>
 		</li>
 	</ul>
 </div>
@@ -33,10 +35,15 @@
 	(click)="group()">Group</button>
 
 <h2> Grouped questions </h2>
-<div *ngIf="groups?.keys() > 0">
+<div *ngIf="groups?.length > 0; else noQuestions">
 	<ul>
-		<li *ngFor="let question of groups">
-			<app-question [question]="question" [showVoting]="false"></app-question>
+		<li *ngFor="let group of groups">
+			Group ID: {{group.gid}}
+			<ul>
+				<li *ngFor="let question of group.questions">
+					<app-question [question]="question" [showVoting]="false"></app-question>
+				</li>
+			</ul>
 		</li>
 	</ul>
 </div>

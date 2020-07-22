@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Question } from './question';
+import { Group } from './group';
 import { Observable, of } from 'rxjs';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { catchError, map, tap } from 'rxjs/operators';
@@ -23,6 +24,22 @@ export class QuestionService {
   questions: Question[];
 
   constructor(private http: HttpClient) { }
+
+  getGroups(): Observable<Group[]> {
+    return this.http.get<Group[]>(`${this.url}/groups`)
+      .pipe(
+        tap(_ => this.log('fetched groups')),
+        catchError(this.handleError<Group[]>('getGroups', []))
+        );
+  }
+
+  addGroup(group: Group) {
+    return this.http.post(`${this.url}/groups`, group, this.httpOptions)
+      .pipe(
+        tap((newGroup) => this.log(`added group with ID ${newGroup['group'][0]['gid']}`)),
+        catchError(this.handleError<Group>('addGroup'))
+        );
+  }
 
   getQuestions(): Observable<Question[]> {
     const qns = this.http.get<Question[]>(`${this.url}/questions`)
