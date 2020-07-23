@@ -24,7 +24,7 @@ export class QuestionsWeekComponent implements OnInit {
   ngOnInit(): void {
   	this.getQuestionsThisWeek();
     this.getGroups();
-    this.currentGroup = {gid: 0, questions: [], rank: 0};
+    this.currentGroup = {gid: 0, questions: [], groupRank: 0};
     this.groups = [];
 
   }
@@ -54,16 +54,16 @@ export class QuestionsWeekComponent implements OnInit {
 
   formatAndDisplayGroups(groups: Group[]): void {
     let maxID = Math.max.apply(Math, groups.map((qn) => {return qn.gid}));
-        for (let i=1; i <= maxID; i++) {
-          let group = groups.filter(grp => grp.gid == i);
-          let questions = [];
-          // @todo: Creating the question component by extracting the keys. Find a smarter way to do this.
-          for (let j=0; j < group.length; j++) {
-            questions.push(this.extractQuestion(group[j]));
-          }
-          this.groups.push({gid: group[0]['gid'], questions: questions, rank: group[0]['rank']});
-        }
+    for (let i=1; i <= maxID; i++) {
+      let group = groups.filter(grp => grp.gid == i);
+      let questions = [];
+      // @todo: Creating the question component by extracting the keys. Find a smarter way to do this.
+      for (let j=0; j < group.length; j++) {
+        questions.push(this.extractQuestion(group[j]));
       }
+      this.groups.push({gid: group[0]['gid'], questions: questions, groupRank: group[0]['groupRank']});
+    }
+  }
 
   addToGroup(question): void {
     if (!this.currentGroup.questions.includes(question)) {
@@ -71,6 +71,18 @@ export class QuestionsWeekComponent implements OnInit {
     } else {
       console.log("question is already in group");
     }
+  }
+
+  removeFromCurrentGroup(question): void {
+    this.currentGroup.questions = this.filterGroupQuestions(this.currentGroup.questions, question);
+  }
+
+  editGroup(group: Group): void {
+    this.currentGroup = group;
+  }
+
+  private filterGroupQuestions(questions, question): Question[] {
+    return questions.filter(qn => qn !== question);
   }
 
   extractQuestion(group: Group): Question {
@@ -86,17 +98,38 @@ export class QuestionsWeekComponent implements OnInit {
   }
 
   group(): void {
-    this.questionService.addGroup(this.currentGroup)
-      .subscribe(groupedQuestions => {
-        debugger;
-        let questions = [];
-        const groupQns = groupedQuestions['group']
-        for (let i=0; i<groupQns.length; i++) {
-          questions.push(this.extractQuestion(groupQns[i]));
-        }
-        this.groups.push({gid: groupQns[0]['gid'], questions: questions, rank: groupQns[0]['rank']});
+    if (!this.existingGroup(this.currentGroup)) {
+      this.questionService.addGroup(this.currentGroup)
+        .subscribe(groupedQuestions => {
+          this.addGroupToGroups(groupedQuestions);
       });
-    this.currentGroup = {gid: 0, questions: [], rank: 0};
+    } else {
+      this.questionService.updateGroup(this.currentGroup)
+      .subscribe(groupedQuestions => {
+        this.groups = this.groups.filter(grp => grp.gid !== groupedQuestions[0]['gid']);
+        this.addGroupToGroups({'group':groupedQuestions});
+      });
+    }
+    this.currentGroup = {gid: 0, questions: [], groupRank: 0};
+  }
+
+  private addGroupToGroups(group): void {
+    let questions = [];
+    const groupQns = group['group']
+    for (let i=0; i<groupQns.length; i++) {
+      questions.push(this.extractQuestion(groupQns[i]));
+    }
+    this.groups.push({gid: groupQns[0]['gid'], questions: questions, groupRank: groupQns[0]['groupRank']});
+  }
+
+  private existingGroup(group: Group): boolean {
+    const groupIDs = this.groups.map(grp => grp.gid)
+    const isInGroups = groupIDs.includes(group['gid']);
+    if (this.groups.length && isInGroups) {
+      return true;
+    } else {
+      return false;
+    }
   }
 
   rank(question): void {

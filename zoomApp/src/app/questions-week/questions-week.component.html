@@ -26,8 +26,8 @@
 	<ul>
 		<li *ngFor="let question of currentGroup.questions">
 			<app-question [question]="question" [showVoting]="false"></app-question>
-			<button title="remove from group"
-				(click)="removeFromGroup(question)">Remove from group</button>
+			<button title="remove from current group"
+				(click)="removeFromCurrentGroup(question)">Remove from current group</button>
 		</li>
 	</ul>
 </div>
@@ -38,12 +38,14 @@
 <div *ngIf="groups?.length > 0; else noQuestions">
 	<ul>
 		<li *ngFor="let group of groups">
-			Group ID: {{group.gid}}
+			Group {{group.gid}}, rank {{group.groupRank}}
 			<ul>
 				<li *ngFor="let question of group.questions">
 					<app-question [question]="question" [showVoting]="false"></app-question>
 				</li>
 			</ul>
+		<button title="Edit group"
+			(click)="editGroup(group)">Edit group</button>
 		</li>
 	</ul>
 </div>

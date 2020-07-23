@@ -36,7 +36,7 @@ try:
         # create table for grouped questions
         groupTableCreation = '''CREATE TABLE groupedQuestions (
             gid int,
-            questionRank int DEFAULT 0,
+            groupRank int DEFAULT 0,
             id int,
             foreign key (id) references submissions (id),
             key (gid, id)

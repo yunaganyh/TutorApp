@@ -60,9 +60,27 @@ def insertNewGroup(conn, group):
         maxID = top + 1
     else:
         maxID = 1
-    insertQuery = '''insert into groupedQuestions (gid, questionRank, id) values (%s, %s, %s)'''
-    for qn in group['questions']:
-        curs.execute(insertQuery, [maxID, group['rank'], qn['id']])
+    insertQuestionsIntoGroup(curs, group, maxID)
     getQuery = '''select * from submissions inner join groupedQuestions on submissions.id = groupedQuestions.id where groupedQuestions.gid = %s'''
     curs.execute(getQuery, [maxID])
+    return curs.fetchall()
+
+def insertQuestionsIntoGroup(curs, group, groupID):
+    insertQuery = '''insert into groupedQuestions (gid, groupRank, id) values (%s, %s, %s)'''
+    for qn in group['questions']:
+        curs.execute(insertQuery, [groupID, group['groupRank'], qn['id']])
+
+def deleteGroup(curs, groupID):
+    deleteQuery = '''delete from groupedQuestions where gid = %s'''
+    curs.execute(deleteQuery,[groupID])
+
+def updateGroup(conn, group):
+    curs = conn.cursor()
+    groupID = group['gid']
+    questions = group['questions']
+    deleteGroup(curs, groupID)
+    print(group)
+    insertQuestionsIntoGroup(curs, group, groupID)
+    getQuery = '''select * from submissions inner join groupedQuestions on submissions.id = groupedQuestions.id where groupedQuestions.gid = %s'''
+    curs.execute(getQuery, [groupID])
     return curs.fetchall()

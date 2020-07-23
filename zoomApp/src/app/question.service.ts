@@ -41,6 +41,13 @@ export class QuestionService {
         );
   }
 
+  updateGroup(group: Group) {
+    return this.http.put(`${this.url}/groups`, group, this.httpOptions).pipe(
+      tap(_ => this.log(`updated group with id=${group.gid}`)),
+      catchError(this.handleError<any>('updateGroup'))
+      );
+  }
+
   getQuestions(): Observable<Question[]> {
     const qns = this.http.get<Question[]>(`${this.url}/questions`)
     	.pipe(

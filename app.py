@@ -44,10 +44,17 @@ class Groups(Resource):
     def post(self):
         conn = sqlFunctions.getConn(TAconn)
         group = request.get_json()
+        print(group)
         insertedGroup = sqlFunctions.insertNewGroup(conn, group)
         # Has to be an object, not array. Otherwise angular throws errors.
         # Find a fix if possible
         return jsonify({'group':insertedGroup})
+
+    def put(self):
+        conn = sqlFunctions.getConn(TAconn)
+        group = request.get_json()
+        return jsonify(sqlFunctions.updateGroup(conn, group))
+
 
 
 api.add_resource(Questions, '/questions')
