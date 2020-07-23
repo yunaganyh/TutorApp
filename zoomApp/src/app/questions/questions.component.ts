@@ -10,8 +10,6 @@ import { Question } from '../question';
 export class QuestionsComponent implements OnInit {
 
   questions: Question[];
-  firstDayOfWeek: Date;
-  lastDayOfWeek: Date;
 
   constructor(private questionService: QuestionService) { }
 
@@ -19,6 +17,9 @@ export class QuestionsComponent implements OnInit {
   	this.getQuestions();
   }
 
+  /**
+   Retrievs all questions from the database and format the uploaded time.
+  **/
   getQuestions(): void {
     this.questionService.getQuestions()
     .subscribe(questions => {

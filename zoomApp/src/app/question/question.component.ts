@@ -12,18 +12,22 @@ export class QuestionComponent implements OnInit {
   constructor(private questionService: QuestionService) { }
 
   @Input() question: Question;
+  // Boolean to toggle displaying the upvote and downvote buttons for each question
   @Input() showVoting: boolean;
 
   ngOnInit(): void {}
 
+  // Increase the number of votes for this question by 1.
   upvote(question: Question): void {
       this.changeVote(question, 1);
     }
 
+    // Decrease the number of votes for this question by 1.
     downvote(question: Question): void {
       this.changeVote(question, -1);
     }
 
+    // Update the question in the database.
     private changeVote(question: Question, change: number): void {
       question['votes'] = question['votes'] + change;
       this.questionService.updateQuestion(question)

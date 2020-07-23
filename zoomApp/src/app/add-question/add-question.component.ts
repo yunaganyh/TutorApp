@@ -14,6 +14,11 @@ export class AddQuestionComponent implements OnInit {
   ngOnInit(): void {
   }
 
+  /**
+   Add a question with the given submitter and description to the database.
+   Alerts the user if both fields are not filled.
+   If both fields are filled, add the question to the database.
+  **/
   addQuestion(submitter:string, description: string): void {
   	submitter: submitter.trim();
   	description: description.trim();
@@ -21,7 +26,6 @@ export class AddQuestionComponent implements OnInit {
   		alert("Please fill out both fields.");
   		return;
   	}
-    let newQuestion = null;
   	this.questionService.addQuestion(submitter, description)
   		.subscribe(question => {
   			alert("Your question has been submitted.");

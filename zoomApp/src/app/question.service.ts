@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { Question } from './question';
 import { Group } from './group';
 import { Observable, of } from 'rxjs';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { catchError, map, tap } from 'rxjs/operators';
 
 @Injectable({
@@ -25,6 +25,9 @@ export class QuestionService {
 
   constructor(private http: HttpClient) { }
 
+  /**
+   Get all groups from the database.
+  **/
   getGroups(): Observable<Group[]> {
     return this.http.get<Group[]>(`${this.url}/groups`)
       .pipe(
@@ -33,6 +36,9 @@ export class QuestionService {
         );
   }
 
+  /**
+   Post the given group to the database.
+  **/
   addGroup(group: Group) {
     return this.http.post(`${this.url}/groups`, group, this.httpOptions)
       .pipe(
@@ -41,6 +47,9 @@ export class QuestionService {
         );
   }
 
+  /**
+   Update the given group in the database.
+  **/
   updateGroup(group: Group) {
     return this.http.put(`${this.url}/groups`, group, this.httpOptions).pipe(
       tap(_ => this.log(`updated group with id=${group.gid}`)),
@@ -48,6 +57,10 @@ export class QuestionService {
       );
   }
 
+  /**
+   Get all questions from the database.
+   Store all questions in a local array for future usage to reduce calls to the database. Not in use yet. 
+  */
   getQuestions(): Observable<Question[]> {
     const qns = this.http.get<Question[]>(`${this.url}/questions`)
     	.pipe(
@@ -60,22 +73,30 @@ export class QuestionService {
     return qns;
   }
 
-  // todo: find a way to reduce calls to the database
-  // Add question first to this.questions and then add it to the database?
-  // Could solve issues with having to convert the timestamp
-  // But have to be careful about how the time is stored so that it shows correctly for different timezones
+  getCurrentQuestions(startDate: string, endDate: string): Observable<Question[]> {
+    const timeFrame = {'startDate': startDate, 'endDate': endDate};
+    const params = new HttpParams().set('startDate', startDate).set('endDate', endDate);
+    return this.http.get<Question[]>(`${this.url}/currentQuestions`, {headers: this.httpOptions.headers, params: params})
+      .pipe(
+        tap(_ => this.log('fetched current questions')),
+        catchError(this.handleError<Question[]>('getQuestions', []))
+        )
+  }
+
+  /**
+   @todo: find a way to reduce calls to the database
+   Add question first to this.questions and then add it to the database?
+   Could solve issues with having to convert the timestamp
+   But have to be careful about how the time is stored so that it shows correctly for different timezones
+  **/
   retrieveQuestions(): Question[] {
     return this.questions;
   }
 
-  convertTimeStamp(questions): Question[] {
-    for (let i = 0; i < questions.length; i++) {
-      let question = questions[i];
-      question['uploadedTime'] = new Date(question['uploadedTime'] * 1000);
-    }
-    return questions;
-  }
- 
+  /**
+   Post a question to the database with the given submitter and description strings. Votes will all be initialized to 0.
+   Returns the new inserted database entry so that we can display it immediately.
+  **/
   addQuestion(submitter:string, description:string): Observable<Question> {
   	const question = {
   		'submitter': submitter, 
@@ -89,12 +110,28 @@ export class QuestionService {
   		);
   }
 
+  /**
+   Puts an update for the given question in the database.
+  **/
   updateQuestion(question: Question): Observable<any> {
     console.log("updating question");
     return this.http.put(`${this.url}/questions`, question, this.httpOptions).pipe(
       tap(_ => this.log(`updated question with id=${question.id} with votes=${question.votes}`)),
       catchError(this.handleError<any>('updateVote'))
       );
+  }
+
+  /**
+   To properly format the uploaded time for a question, we retrieve it as a unix_timestamp, which is the 
+   number of seconds since '1970-01-01 00:00:00' UTC at which the question was posted.
+   We convert it to a Date object to properly format the time for the local timezone.
+  **/
+  convertTimeStamp(questions): Question[] {
+    for (let i = 0; i < questions.length; i++) {
+      let question = questions[i];
+      question['uploadedTime'] = new Date(question['uploadedTime'] * 1000);
+    }
+    return questions;
   }
 
   // @todo: implement searching for questions 

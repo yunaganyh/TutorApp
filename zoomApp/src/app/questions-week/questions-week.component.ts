@@ -12,39 +12,57 @@ import { Group } from '../group';
 
 export class QuestionsWeekComponent implements OnInit {
   
+  // Store all the questions
   questions: Question[];
+
+  // Store questions uploaded this week. Currently a monday-sunday week.
   questionsOfTheWeek: Question[];
-  firstDayOfWeek: Date;
-  lastDayOfWeek: Date;
+
+  // First day of the week - Monday midnight - in milliseconds since '1970-01-01 00:00:00' UTC.
+  firstDayOfWeek: string;
+
+  // Last day of the week - Sunday midnight - in milliseconds since '1970-01-01 00:00:00' UTC.
+  lastDayOfWeek: string;
+
+  // Current questions selected for grouping.
   currentGroup: Group;
+
+  // All groups of questions already grouped.
   groups: Group[];
   
   constructor(private questionService: QuestionService) { }
 
   ngOnInit(): void {
+
   	this.getQuestionsThisWeek();
     this.getGroups();
-    this.currentGroup = {gid: 0, questions: [], groupRank: 0};
-    this.groups = [];
 
+    // Initialize current group to "empty" values.
+    this.currentGroup = {gid: 0, questions: [], groupRank: 0};
+
+    // Initialize groups to empty array.
+    this.groups = [];
   }
 
+  /** 
+   Get questions from the database filtered by uploaded time.
+   The start of the timeframe is the first day of the week - Monday midnight of this week.
+   The end of the timeframe is the last day of the week to Sunday midnight of this week.
+  **/
   getQuestionsThisWeek(): void {
-    this.questionService.getQuestions()
+    let today = new Date(new Date().setHours(0,0,0,0));
+    let dayInWeek = today.getDay();
+    let firstDayOfWeek = dayInWeek == 1 ? today : new Date(today.setDate(today.getDate() - (dayInWeek + 6) % 7));
+    let lastDayOfWeek = new Date(new Date().setDate(today.getDate() + 7));
+    this.firstDayOfWeek = (firstDayOfWeek.getTime()).toString();
+    this.lastDayOfWeek = (lastDayOfWeek.getTime()).toString();
+    this.questionService.getCurrentQuestions(this.firstDayOfWeek, this.lastDayOfWeek)
     .subscribe(questions => {
-      this.filterQuestions(questions);
+      this.questionsOfTheWeek = this.questionService.convertTimeStamp(questions);
     })
   }
 
-  filterQuestions(questions): void {
-    this.questions = this.questionService.convertTimeStamp(questions);
-    let today = new Date(new Date().setHours(0,0,0,0));
-    let dayInWeek = today.getDay();
-    this.firstDayOfWeek = dayInWeek == 1 ? today : new Date(today.setDate(today.getDate() - (dayInWeek + 6) % 7));
-    this.lastDayOfWeek = new Date(new Date().setDate(today.getDate() + 7));
-    this.questionsOfTheWeek = this.questions.filter(qn => this.questionInThisWeek(qn))
-  }
-
+  // Get all groups from the database.
   getGroups(): void {
     this.questionService.getGroups()
       .subscribe(groups => {
@@ -52,8 +70,10 @@ export class QuestionsWeekComponent implements OnInit {
         })
   }
 
+  /** 
+   The questions in groups come back as an array and are sorted and grouped before they can be displayed.
+  **/
   formatAndDisplayGroups(groups: Group[]): void {
-    debugger;
     let maxID = Math.max.apply(Math, groups.map((qn) => {return qn.gid}));
     for (let i=1; i <= maxID; i++) {
       let group = groups.filter(grp => grp.gid == i);
@@ -67,6 +87,9 @@ export class QuestionsWeekComponent implements OnInit {
     }
   }
 
+  /**
+   Add a question to the current group.
+  **/
   addToGroup(question): void {
     if (!this.currentGroup.questions.includes(question)) {
       this.currentGroup.questions.push(question);
@@ -75,18 +98,30 @@ export class QuestionsWeekComponent implements OnInit {
     }
   }
 
+ /**
+  Remove a question from the current group.
+ **/
   removeFromCurrentGroup(question): void {
     this.currentGroup.questions = this.filterGroupQuestions(this.currentGroup.questions, question);
   }
 
+  /**
+   Edit a group by making the current group that can have questions added to and removed from it.
+  **/
   editGroup(group: Group): void {
     this.currentGroup = group;
   }
 
+  /**
+   Filter a given question from an array of questions.
+  **/
   private filterGroupQuestions(questions, question): Question[] {
     return questions.filter(qn => qn !== question);
   }
 
+  /**
+   Extract the question properties from a given group object.
+  **/
   extractQuestion(group: Group): Question {
     let id = group['gid'];
     let question = {
@@ -99,6 +134,11 @@ export class QuestionsWeekComponent implements OnInit {
     return question;
   }
 
+  /**
+   Update the group in the database if the current group is currently being edited.
+   Add the group to the database if the group is new.
+   Reset the current group properties after changes have been made.
+  **/
   group(): void {
     if (!this.existingGroup(this.currentGroup)) {
       this.questionService.addGroup(this.currentGroup)
@@ -107,14 +147,15 @@ export class QuestionsWeekComponent implements OnInit {
       });
     } else {
       this.questionService.updateGroup(this.currentGroup)
-      .subscribe(groupedQuestions => {
-        this.groups = this.groups.filter(grp => grp.gid !== groupedQuestions[0]['gid']);
-        this.addGroupToGroups({'group':groupedQuestions});
-      });
+      .subscribe(() => alert('Group was updated'));
     }
     this.currentGroup = {gid: 0, questions: [], groupRank: 0};
   }
 
+  /**
+   Extracts questions from the group questions returned from the database.
+   Formats the uploaded time for the questions and add it to the array of groups.
+  **/
   private addGroupToGroups(group): void {
     let questions = [];
     const groupQns = group['group']
@@ -125,6 +166,9 @@ export class QuestionsWeekComponent implements OnInit {
     this.groups.push({gid: groupQns[0]['gid'], questions: questions, groupRank: groupQns[0]['groupRank']});
   }
 
+  /**
+   Checks if a group is existing by checking if its group id is in the this.groups array of groups.
+  **/
   private existingGroup(group: Group): boolean {
     const groupIDs = this.groups.map(grp => grp.gid)
     const isInGroups = groupIDs.includes(group['gid']);
@@ -138,9 +182,4 @@ export class QuestionsWeekComponent implements OnInit {
   rank(question): void {
 
   }
-
-  private questionInThisWeek(question: Question): boolean {
-      let qnUpload = question['uploadedTime'];
-      return qnUpload >= this.firstDayOfWeek && qnUpload <= this.lastDayOfWeek;
-    }
 }
