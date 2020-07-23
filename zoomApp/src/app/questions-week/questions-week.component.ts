@@ -53,6 +53,7 @@ export class QuestionsWeekComponent implements OnInit {
   }
 
   formatAndDisplayGroups(groups: Group[]): void {
+    debugger;
     let maxID = Math.max.apply(Math, groups.map((qn) => {return qn.gid}));
     for (let i=1; i <= maxID; i++) {
       let group = groups.filter(grp => grp.gid == i);
@@ -61,6 +62,7 @@ export class QuestionsWeekComponent implements OnInit {
       for (let j=0; j < group.length; j++) {
         questions.push(this.extractQuestion(group[j]));
       }
+      questions = this.questionService.convertTimeStamp(questions);
       this.groups.push({gid: group[0]['gid'], questions: questions, groupRank: group[0]['groupRank']});
     }
   }
@@ -92,7 +94,7 @@ export class QuestionsWeekComponent implements OnInit {
       'id': group['id'],
       'submitter': group['submitter'],
       'votes': group['votes'],
-      'uploadedTime': group['uploaded'],
+      'uploadedTime': group['uploadedTime'],
     };
     return question;
   }
@@ -119,6 +121,7 @@ export class QuestionsWeekComponent implements OnInit {
     for (let i=0; i<groupQns.length; i++) {
       questions.push(this.extractQuestion(groupQns[i]));
     }
+    questions = this.questionService.convertTimeStamp(questions);
     this.groups.push({gid: groupQns[0]['gid'], questions: questions, groupRank: groupQns[0]['groupRank']});
   }
 

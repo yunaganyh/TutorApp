@@ -43,7 +43,7 @@ def getAllQuestions(conn):
 
 def getAllGroups(conn):
     curs = conn.cursor()
-    getQuery = '''select * from submissions inner join groupedQuestions where submissions.id = groupedQuestions.id'''
+    getQuery = '''select submissions.id, votes, description, submitter, unix_timestamp(uploaded) as uploadedTime, gid, groupRank from submissions inner join groupedQuestions where submissions.id = groupedQuestions.id'''
     curs.execute(getQuery)
     return curs.fetchall()
 
@@ -61,7 +61,7 @@ def insertNewGroup(conn, group):
     else:
         maxID = 1
     insertQuestionsIntoGroup(curs, group, maxID)
-    getQuery = '''select * from submissions inner join groupedQuestions on submissions.id = groupedQuestions.id where groupedQuestions.gid = %s'''
+    getQuery = '''select submissions.id, votes, description, submitter, unix_timestamp(uploaded) as uploadedTime, gid, groupRank from submissions inner join groupedQuestions on submissions.id = groupedQuestions.id where groupedQuestions.gid = %s'''
     curs.execute(getQuery, [maxID])
     return curs.fetchall()
 
@@ -81,6 +81,6 @@ def updateGroup(conn, group):
     deleteGroup(curs, groupID)
     print(group)
     insertQuestionsIntoGroup(curs, group, groupID)
-    getQuery = '''select * from submissions inner join groupedQuestions on submissions.id = groupedQuestions.id where groupedQuestions.gid = %s'''
+    getQuery = '''select submissions.id, votes, description, submitter, unix_timestamp(uploaded) as uploadedTime, gid, groupRank from submissions inner join groupedQuestions on submissions.id = groupedQuestions.id where groupedQuestions.gid = %s'''
     curs.execute(getQuery, [groupID])
     return curs.fetchall()
